@@ -11,6 +11,8 @@ import com.shujath.todoapp.service.TodoListService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class TodoListServiceImpl implements TodoListService {
@@ -33,5 +35,13 @@ public class TodoListServiceImpl implements TodoListService {
         TodoList saved = todoListRepository.save(todoList);
 
         return todoListMapper.toResponse(saved);
+    }
+
+    @Override
+    public List<TodoListResponse> getAllTodoLists(Long userId) {
+
+        List<TodoList> todoLists = todoListRepository.findByUserId(userId);
+
+        return todoListMapper.toResponseList(todoLists);
     }
 }

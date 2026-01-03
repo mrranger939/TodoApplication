@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import com.shujath.todoapp.service.TodoListService;
 
+import java.util.List;
+
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/v1/lists")
@@ -21,9 +23,10 @@ public class TodoListController {
     }
 
     // Get all todo lists of current user
+    // GET /api/v1/lists?userId=1
     @GetMapping
-    public void getAllTodoLists() {
-        // TODO: implement later
+    public List<TodoListResponse> getAllTodoLists(@RequestParam Long userId) {
+        return todoListService.getAllTodoLists(userId);
     }
 
     // Get one todo list
