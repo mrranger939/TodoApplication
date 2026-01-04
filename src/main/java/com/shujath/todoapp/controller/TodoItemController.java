@@ -1,18 +1,27 @@
 package com.shujath.todoapp.controller;
 
 
+import com.shujath.todoapp.dto.todoitem.CreateTodoItemRequest;
+import com.shujath.todoapp.dto.todoitem.TodoItemResponse;
+import com.shujath.todoapp.service.TodoItemService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/v1/lists/{listId}/items")
 public class TodoItemController {
 
+    private final TodoItemService todoItemService;
+
     // Create todo item
     @PostMapping
-    public void createTodoItem(
-            @PathVariable Long listId
+    public TodoItemResponse createTodoItem(
+            @PathVariable Long listId,
+            @RequestBody CreateTodoItemRequest request
     ) {
-        // TODO: implement later
+
+        return todoItemService.createTodoItem(listId, request);
     }
 
     // Get all items in a list
