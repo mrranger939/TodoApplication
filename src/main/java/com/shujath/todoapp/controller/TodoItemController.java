@@ -7,6 +7,8 @@ import com.shujath.todoapp.service.TodoItemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/lists/{listId}/items")
@@ -26,10 +28,10 @@ public class TodoItemController {
 
     // Get all items in a list
     @GetMapping
-    public void getAllTodoItems(
+    public List<TodoItemResponse> getAllTodoItems(
             @PathVariable Long listId
     ) {
-        // TODO: implement later
+        return todoItemService.getAllTodoItems(listId);
     }
 
     // Get one todo item

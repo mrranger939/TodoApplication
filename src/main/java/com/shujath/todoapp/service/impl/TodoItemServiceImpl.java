@@ -11,6 +11,8 @@ import com.shujath.todoapp.service.TodoItemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class TodoItemServiceImpl implements TodoItemService {
@@ -18,6 +20,7 @@ public class TodoItemServiceImpl implements TodoItemService {
     private final TodoItemRepository todoItemRepository;
     private final TodoListRepository todoListRepository;
     private final TodoItemMapper todoItemMapper;
+
     @Override
     public TodoItemResponse createTodoItem(Long listId, CreateTodoItemRequest request) {
 
@@ -38,4 +41,17 @@ public class TodoItemServiceImpl implements TodoItemService {
 
         return todoItemMapper.toResponse(saved);
     }
+
+    @Override
+    public List<TodoItemResponse> getAllTodoItems(Long listId) {
+
+        // Optional safety check (recommended)
+        todoListRepository.findById(listId)
+                .orElseThrow(() -> new RuntimeException("Todo list not found"));
+
+        List<TodoItem> items = todoItemRepository.findByTodoListId(listId);
+
+        return todoItemMapper.toResponseList(items);
+    }
+
 }
