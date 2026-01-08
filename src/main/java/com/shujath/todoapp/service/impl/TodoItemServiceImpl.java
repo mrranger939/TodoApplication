@@ -54,4 +54,16 @@ public class TodoItemServiceImpl implements TodoItemService {
         return todoItemMapper.toResponseList(items);
     }
 
+    @Override
+    public TodoItemResponse getTodoItem(Long listId, Long itemId) {
+
+        TodoItem item = todoItemRepository
+                .findByIdAndTodoListId(itemId, listId)
+                .orElseThrow(() ->
+                        new RuntimeException("Todo item not found for this list")
+                );
+
+        return todoItemMapper.toResponse(item);
+    }
+
 }

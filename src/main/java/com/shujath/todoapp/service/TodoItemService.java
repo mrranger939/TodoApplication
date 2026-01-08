@@ -8,4 +8,5 @@ import java.util.List;
 public interface TodoItemService {
     TodoItemResponse createTodoItem(Long listId, CreateTodoItemRequest request);
     List<TodoItemResponse> getAllTodoItems(Long listId);
+    TodoItemResponse getTodoItem(Long listId, Long itemId);
 }

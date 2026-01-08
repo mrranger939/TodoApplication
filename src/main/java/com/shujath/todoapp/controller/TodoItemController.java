@@ -36,11 +36,11 @@ public class TodoItemController {
 
     // Get one todo item
     @GetMapping("/{itemId}")
-    public void getTodoItem(
+    public TodoItemResponse getTodoItem(
             @PathVariable Long listId,
             @PathVariable Long itemId
     ) {
-        // TODO: implement later
+        return todoItemService.getTodoItem(listId, itemId);
     }
 
     // Update todo item
