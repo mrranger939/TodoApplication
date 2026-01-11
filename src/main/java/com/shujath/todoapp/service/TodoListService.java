@@ -10,5 +10,6 @@ public interface TodoListService {
     TodoListResponse createTodoList(CreateTodoListRequest request);
     List<TodoListResponse> getAllTodoLists(Long userId);
     TodoListResponse updateTodoList(Long listId, UpdateTodoListRequest request);
+    TodoListResponse deleteTodoList(Long listId);
 }
 

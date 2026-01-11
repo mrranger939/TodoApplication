@@ -60,4 +60,19 @@ public class TodoListServiceImpl implements TodoListService {
         return todoListMapper.toResponse(updated);
     }
 
+    @Override
+    public TodoListResponse deleteTodoList(Long listId) {
+
+        TodoList todoList = todoListRepository.findById(listId)
+                .orElseThrow(() -> new RuntimeException("Todo list not found"));
+
+        // Convert to DTO BEFORE deleting
+        TodoListResponse response = todoListMapper.toResponse(todoList);
+
+        // Delete (cascade will remove items)
+        todoListRepository.delete(todoList);
+
+        return response;
+    }
+
 }

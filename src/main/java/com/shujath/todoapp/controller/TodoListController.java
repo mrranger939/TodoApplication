@@ -43,7 +43,7 @@ public class TodoListController {
 
     // Delete todo list
     @DeleteMapping("/{listId}")
-    public void deleteTodoList(@PathVariable Long listId) {
-        // TODO: implement later
+    public TodoListResponse deleteTodoList(@PathVariable Long listId) {
+        return todoListService.deleteTodoList(listId);
     }
 }
