@@ -7,5 +7,4 @@ import lombok.Setter;
 @Setter
 public class CreateTodoListRequest {
     private String name;
-    private Long userId;
 }

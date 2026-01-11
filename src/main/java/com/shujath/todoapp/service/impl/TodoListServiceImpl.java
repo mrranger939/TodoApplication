@@ -23,9 +23,9 @@ public class TodoListServiceImpl implements TodoListService {
     private final TodoListMapper todoListMapper;
 
     @Override
-    public TodoListResponse createTodoList(CreateTodoListRequest request) {
+    public TodoListResponse createTodoList(Long userId, CreateTodoListRequest request) {
 
-        User user = userRepository.findById(request.getUserId())
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         TodoList todoList = TodoList.builder()
@@ -47,11 +47,14 @@ public class TodoListServiceImpl implements TodoListService {
     }
 
     @Override
-    public TodoListResponse updateTodoList(Long listId, UpdateTodoListRequest request) {
+    public TodoListResponse updateTodoList(Long userId, Long listId, UpdateTodoListRequest request) {
 
         TodoList todoList = todoListRepository.findById(listId)
                 .orElseThrow(() -> new RuntimeException("Todo list not found"));
 
+        if (!todoList.getUser().getId().equals(userId)) {
+            throw new RuntimeException("You are not allowed to update this todo list");
+        }
         // Update only allowed field
         todoList.setName(request.getName());
 
@@ -61,10 +64,14 @@ public class TodoListServiceImpl implements TodoListService {
     }
 
     @Override
-    public TodoListResponse deleteTodoList(Long listId) {
+    public TodoListResponse deleteTodoList(Long userId, Long listId) {
 
         TodoList todoList = todoListRepository.findById(listId)
                 .orElseThrow(() -> new RuntimeException("Todo list not found"));
+
+        if (!todoList.getUser().getId().equals(userId)) {
+            throw new RuntimeException("You are not allowed to delete this todo list");
+        }
 
         // Convert to DTO BEFORE deleting
         TodoListResponse response = todoListMapper.toResponse(todoList);

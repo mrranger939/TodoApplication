@@ -7,9 +7,9 @@ import com.shujath.todoapp.dto.todolist.UpdateTodoListRequest;
 import java.util.List;
 
 public interface TodoListService {
-    TodoListResponse createTodoList(CreateTodoListRequest request);
+    TodoListResponse createTodoList(Long userId, CreateTodoListRequest request);
     List<TodoListResponse> getAllTodoLists(Long userId);
-    TodoListResponse updateTodoList(Long listId, UpdateTodoListRequest request);
-    TodoListResponse deleteTodoList(Long listId);
+    TodoListResponse updateTodoList(Long userId,Long listId, UpdateTodoListRequest request);
+    TodoListResponse deleteTodoList(Long userId,Long listId);
 }
 
