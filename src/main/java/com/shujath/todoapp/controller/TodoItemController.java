@@ -1,11 +1,12 @@
 package com.shujath.todoapp.controller;
 
-
 import com.shujath.todoapp.dto.todoitem.CreateTodoItemRequest;
 import com.shujath.todoapp.dto.todoitem.TodoItemResponse;
 import com.shujath.todoapp.dto.todoitem.UpdateTodoItemRequest;
 import com.shujath.todoapp.service.TodoItemService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,56 +21,71 @@ public class TodoItemController {
 
     // Create todo item
     @PostMapping
-    public TodoItemResponse createTodoItem(
+    public ResponseEntity<TodoItemResponse> createTodoItem(
             @PathVariable Long listId,
             @RequestBody CreateTodoItemRequest request,
             Authentication authentication
     ) {
         Long userId = (Long) authentication.getPrincipal();
-        return todoItemService.createTodoItem(userId, listId, request);
+        TodoItemResponse response =
+                todoItemService.createTodoItem(userId, listId, request);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response); // 201
     }
 
     // Get all items in a list
     @GetMapping
-    public List<TodoItemResponse> getAllTodoItems(
+    public ResponseEntity<List<TodoItemResponse>> getAllTodoItems(
             @PathVariable Long listId,
             Authentication authentication
     ) {
         Long userId = (Long) authentication.getPrincipal();
-        return todoItemService.getAllTodoItems(userId, listId);
+        List<TodoItemResponse> response =
+                todoItemService.getAllTodoItems(userId, listId);
+
+        return ResponseEntity.ok(response); // 200
     }
 
     // Get one todo item
     @GetMapping("/{itemId}")
-    public TodoItemResponse getTodoItem(
+    public ResponseEntity<TodoItemResponse> getTodoItem(
             @PathVariable Long listId,
             @PathVariable Long itemId,
             Authentication authentication
     ) {
         Long userId = (Long) authentication.getPrincipal();
-        return todoItemService.getTodoItem(userId, listId, itemId);
+        TodoItemResponse response =
+                todoItemService.getTodoItem(userId, listId, itemId);
+
+        return ResponseEntity.ok(response); // 200
     }
 
     // Update todo item
     @PutMapping("/{itemId}")
-    public TodoItemResponse updateTodoItem(
+    public ResponseEntity<TodoItemResponse> updateTodoItem(
             @PathVariable Long listId,
             @PathVariable Long itemId,
             @RequestBody UpdateTodoItemRequest request,
             Authentication authentication
     ) {
         Long userId = (Long) authentication.getPrincipal();
-        return todoItemService.updateTodoItem(userId, listId, itemId, request);
+        TodoItemResponse response =
+                todoItemService.updateTodoItem(userId, listId, itemId, request);
+
+        return ResponseEntity.ok(response); // 200
     }
 
     // Delete todo item
     @DeleteMapping("/{itemId}")
-    public TodoItemResponse deleteTodoItem(
+    public ResponseEntity<TodoItemResponse> deleteTodoItem(
             @PathVariable Long listId,
             @PathVariable Long itemId,
             Authentication authentication
     ) {
         Long userId = (Long) authentication.getPrincipal();
-        return todoItemService.deleteTodoItem(userId, listId, itemId);
+        TodoItemResponse response =
+                todoItemService.deleteTodoItem(userId, listId, itemId);
+
+        return ResponseEntity.ok(response); // 200
     }
 }

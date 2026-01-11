@@ -3,6 +3,7 @@ package com.shujath.todoapp.controller;
 import com.shujath.todoapp.dto.user.UserProfileResponse;
 import com.shujath.todoapp.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,10 +16,11 @@ public class UserController {
 
     // Get current user profile
     @GetMapping("/me")
-    public UserProfileResponse getCurrentUser(Authentication authentication) {
+    public ResponseEntity<UserProfileResponse> getCurrentUser(Authentication authentication) {
 
         Long userId = (Long) authentication.getPrincipal();
-        return userService.getCurrentUser(userId);
+        UserProfileResponse response = userService.getCurrentUser(userId);
+        return ResponseEntity.ok(response);
 
     }
 }

@@ -6,6 +6,8 @@ import com.shujath.todoapp.dto.auth.RegisterRequest;
 import com.shujath.todoapp.dto.auth.RegisterResponse;
 import com.shujath.todoapp.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -17,17 +19,23 @@ public class AuthController {
 
     // Register (Sign up)
     @PostMapping("/register")
-    public RegisterResponse register(
+    public ResponseEntity<RegisterResponse> register(
             @RequestBody RegisterRequest request
     ) {
-        return userService.register(request);
+        RegisterResponse response = userService.register(request);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED) // 201
+                .body(response);
     }
 
     // Login (Sign in)
     @PostMapping("/login")
-    public LoginResponse login(
+    public ResponseEntity<LoginResponse> login(
             @RequestBody LoginRequest request
     ) {
-        return userService.login(request);
+        LoginResponse response = userService.login(request);
+
+        return ResponseEntity.ok(response); // 200
     }
 }

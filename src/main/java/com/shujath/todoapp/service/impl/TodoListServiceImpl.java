@@ -5,6 +5,8 @@ import com.shujath.todoapp.dto.todolist.TodoListResponse;
 import com.shujath.todoapp.dto.todolist.UpdateTodoListRequest;
 import com.shujath.todoapp.entity.TodoList;
 import com.shujath.todoapp.entity.User;
+import com.shujath.todoapp.exception.ForbiddenException;
+import com.shujath.todoapp.exception.NotFoundException;
 import com.shujath.todoapp.mapper.TodoListMapper;
 import com.shujath.todoapp.repository.TodoListRepository;
 import com.shujath.todoapp.repository.UserRepository;
@@ -26,7 +28,9 @@ public class TodoListServiceImpl implements TodoListService {
     public TodoListResponse createTodoList(Long userId, CreateTodoListRequest request) {
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() ->
+                        new NotFoundException("User not found")
+                );
 
         TodoList todoList = TodoList.builder()
                 .name(request.getName())
@@ -47,15 +51,24 @@ public class TodoListServiceImpl implements TodoListService {
     }
 
     @Override
-    public TodoListResponse updateTodoList(Long userId, Long listId, UpdateTodoListRequest request) {
+    public TodoListResponse updateTodoList(
+            Long userId,
+            Long listId,
+            UpdateTodoListRequest request
+    ) {
 
         TodoList todoList = todoListRepository.findById(listId)
-                .orElseThrow(() -> new RuntimeException("Todo list not found"));
+                .orElseThrow(() ->
+                        new NotFoundException("Todo list not found")
+                );
+
 
         if (!todoList.getUser().getId().equals(userId)) {
-            throw new RuntimeException("You are not allowed to update this todo list");
+            throw new ForbiddenException(
+                    "You are not allowed to update this todo list"
+            );
         }
-        // Update only allowed field
+
         todoList.setName(request.getName());
 
         TodoList updated = todoListRepository.save(todoList);
@@ -67,19 +80,21 @@ public class TodoListServiceImpl implements TodoListService {
     public TodoListResponse deleteTodoList(Long userId, Long listId) {
 
         TodoList todoList = todoListRepository.findById(listId)
-                .orElseThrow(() -> new RuntimeException("Todo list not found"));
+                .orElseThrow(() ->
+                        new NotFoundException("Todo list not found")
+                );
 
         if (!todoList.getUser().getId().equals(userId)) {
-            throw new RuntimeException("You are not allowed to delete this todo list");
+            throw new ForbiddenException(
+                    "You are not allowed to delete this todo list"
+            );
         }
 
         // Convert to DTO BEFORE deleting
         TodoListResponse response = todoListMapper.toResponse(todoList);
 
-        // Delete (cascade will remove items)
         todoListRepository.delete(todoList);
 
         return response;
     }
-
 }
