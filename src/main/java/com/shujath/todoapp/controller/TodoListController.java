@@ -3,6 +3,7 @@ package com.shujath.todoapp.controller;
 
 import com.shujath.todoapp.dto.todolist.CreateTodoListRequest;
 import com.shujath.todoapp.dto.todolist.TodoListResponse;
+import com.shujath.todoapp.dto.todolist.UpdateTodoListRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import com.shujath.todoapp.service.TodoListService;
@@ -29,18 +30,15 @@ public class TodoListController {
         return todoListService.getAllTodoLists(userId);
     }
 
-    // Get one todo list
-    @GetMapping("/{listId}")
-    public void getTodoList(@PathVariable Long listId) {
-        // TODO: implement later
-    }
+
 
     // Update todo list name
     @PutMapping("/{listId}")
-    public void updateTodoList(
-            @PathVariable Long listId
+    public TodoListResponse updateTodoList(
+            @PathVariable Long listId,
+            @RequestBody UpdateTodoListRequest request
     ) {
-        // TODO: implement later
+        return todoListService.updateTodoList(listId, request);
     }
 
     // Delete todo list

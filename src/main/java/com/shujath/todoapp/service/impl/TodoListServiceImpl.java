@@ -2,6 +2,7 @@ package com.shujath.todoapp.service.impl;
 
 import com.shujath.todoapp.dto.todolist.CreateTodoListRequest;
 import com.shujath.todoapp.dto.todolist.TodoListResponse;
+import com.shujath.todoapp.dto.todolist.UpdateTodoListRequest;
 import com.shujath.todoapp.entity.TodoList;
 import com.shujath.todoapp.entity.User;
 import com.shujath.todoapp.mapper.TodoListMapper;
@@ -44,4 +45,19 @@ public class TodoListServiceImpl implements TodoListService {
 
         return todoListMapper.toResponseList(todoLists);
     }
+
+    @Override
+    public TodoListResponse updateTodoList(Long listId, UpdateTodoListRequest request) {
+
+        TodoList todoList = todoListRepository.findById(listId)
+                .orElseThrow(() -> new RuntimeException("Todo list not found"));
+
+        // Update only allowed field
+        todoList.setName(request.getName());
+
+        TodoList updated = todoListRepository.save(todoList);
+
+        return todoListMapper.toResponse(updated);
+    }
+
 }
