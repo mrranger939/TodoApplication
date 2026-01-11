@@ -23,11 +23,15 @@ public class TodoItemServiceImpl implements TodoItemService {
     private final TodoItemMapper todoItemMapper;
 
     @Override
-    public TodoItemResponse createTodoItem(Long listId, CreateTodoItemRequest request) {
+    public TodoItemResponse createTodoItem(Long userId, Long listId, CreateTodoItemRequest request) {
 
         // 1️⃣ listId → TodoList
         TodoList todoList = todoListRepository.findById(listId)
                 .orElseThrow(() -> new RuntimeException("Todo list not found"));
+
+        if (!todoList.getUser().getId().equals(userId)) {
+            throw new RuntimeException("You are not allowed to add items to this list");
+        }
 
         // 2️⃣ Build TodoItem
         TodoItem todoItem = TodoItem.builder()
@@ -44,11 +48,15 @@ public class TodoItemServiceImpl implements TodoItemService {
     }
 
     @Override
-    public List<TodoItemResponse> getAllTodoItems(Long listId) {
+    public List<TodoItemResponse> getAllTodoItems(Long userId, Long listId) {
 
         // Optional safety check (recommended)
-        todoListRepository.findById(listId)
+        TodoList todoList = todoListRepository.findById(listId)
                 .orElseThrow(() -> new RuntimeException("Todo list not found"));
+
+        if (!todoList.getUser().getId().equals(userId)) {
+            throw new RuntimeException("You are not allowed to add items to this list");
+        }
 
         List<TodoItem> items = todoItemRepository.findByTodoListId(listId);
 
@@ -56,7 +64,7 @@ public class TodoItemServiceImpl implements TodoItemService {
     }
 
     @Override
-    public TodoItemResponse getTodoItem(Long listId, Long itemId) {
+    public TodoItemResponse getTodoItem(Long userId, Long listId, Long itemId) {
 
         TodoItem item = todoItemRepository
                 .findByIdAndTodoListId(itemId, listId)
@@ -64,11 +72,15 @@ public class TodoItemServiceImpl implements TodoItemService {
                         new RuntimeException("Todo item not found for this list")
                 );
 
+        if (!item.getTodoList().getUser().getId().equals(userId)) {
+            throw new RuntimeException("You are not allowed to view this todo item");
+        }
         return todoItemMapper.toResponse(item);
     }
 
     @Override
     public TodoItemResponse updateTodoItem(
+            Long userId,
             Long listId,
             Long itemId,
             UpdateTodoItemRequest request
@@ -79,6 +91,10 @@ public class TodoItemServiceImpl implements TodoItemService {
                 .orElseThrow(() ->
                         new RuntimeException("Todo item not found for this list")
                 );
+
+        if (!item.getTodoList().getUser().getId().equals(userId)) {
+            throw new RuntimeException("You are not allowed to update this todo item");
+        }
 
         // Update only provided fields
         if (request.getTitle() != null) {
@@ -99,7 +115,7 @@ public class TodoItemServiceImpl implements TodoItemService {
     }
 
     @Override
-    public TodoItemResponse deleteTodoItem(Long listId, Long itemId) {
+    public TodoItemResponse deleteTodoItem(Long userId, Long listId, Long itemId) {
 
         TodoItem item = todoItemRepository
                 .findByIdAndTodoListId(itemId, listId)
@@ -107,6 +123,9 @@ public class TodoItemServiceImpl implements TodoItemService {
                         new RuntimeException("Todo item not found for this list")
                 );
 
+        if (!item.getTodoList().getUser().getId().equals(userId)) {
+            throw new RuntimeException("You are not allowed to update this todo item");
+        }
         // Capture response BEFORE delete
         TodoItemResponse response = todoItemMapper.toResponse(item);
 

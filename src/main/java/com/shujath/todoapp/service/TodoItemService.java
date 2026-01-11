@@ -7,14 +7,15 @@ import com.shujath.todoapp.dto.todoitem.UpdateTodoItemRequest;
 import java.util.List;
 
 public interface TodoItemService {
-    TodoItemResponse createTodoItem(Long listId, CreateTodoItemRequest request);
-    List<TodoItemResponse> getAllTodoItems(Long listId);
-    TodoItemResponse getTodoItem(Long listId, Long itemId);
+    TodoItemResponse createTodoItem(Long userId, Long listId, CreateTodoItemRequest request);
+    List<TodoItemResponse> getAllTodoItems(Long userId, Long listId);
+    TodoItemResponse getTodoItem(Long userId, Long listId, Long itemId);
     TodoItemResponse updateTodoItem(
+            Long userId,
             Long listId,
             Long itemId,
             UpdateTodoItemRequest request
     );
 
-    TodoItemResponse deleteTodoItem(Long listId, Long itemId);
+    TodoItemResponse deleteTodoItem(Long userId, Long listId, Long itemId);
 }

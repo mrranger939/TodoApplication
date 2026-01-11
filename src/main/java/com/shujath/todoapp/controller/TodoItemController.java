@@ -6,6 +6,7 @@ import com.shujath.todoapp.dto.todoitem.TodoItemResponse;
 import com.shujath.todoapp.dto.todoitem.UpdateTodoItemRequest;
 import com.shujath.todoapp.service.TodoItemService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,27 +22,32 @@ public class TodoItemController {
     @PostMapping
     public TodoItemResponse createTodoItem(
             @PathVariable Long listId,
-            @RequestBody CreateTodoItemRequest request
+            @RequestBody CreateTodoItemRequest request,
+            Authentication authentication
     ) {
-
-        return todoItemService.createTodoItem(listId, request);
+        Long userId = (Long) authentication.getPrincipal();
+        return todoItemService.createTodoItem(userId, listId, request);
     }
 
     // Get all items in a list
     @GetMapping
     public List<TodoItemResponse> getAllTodoItems(
-            @PathVariable Long listId
+            @PathVariable Long listId,
+            Authentication authentication
     ) {
-        return todoItemService.getAllTodoItems(listId);
+        Long userId = (Long) authentication.getPrincipal();
+        return todoItemService.getAllTodoItems(userId, listId);
     }
 
     // Get one todo item
     @GetMapping("/{itemId}")
     public TodoItemResponse getTodoItem(
             @PathVariable Long listId,
-            @PathVariable Long itemId
+            @PathVariable Long itemId,
+            Authentication authentication
     ) {
-        return todoItemService.getTodoItem(listId, itemId);
+        Long userId = (Long) authentication.getPrincipal();
+        return todoItemService.getTodoItem(userId, listId, itemId);
     }
 
     // Update todo item
@@ -49,17 +55,21 @@ public class TodoItemController {
     public TodoItemResponse updateTodoItem(
             @PathVariable Long listId,
             @PathVariable Long itemId,
-            @RequestBody UpdateTodoItemRequest request
+            @RequestBody UpdateTodoItemRequest request,
+            Authentication authentication
     ) {
-        return todoItemService.updateTodoItem(listId, itemId, request);
+        Long userId = (Long) authentication.getPrincipal();
+        return todoItemService.updateTodoItem(userId, listId, itemId, request);
     }
 
     // Delete todo item
     @DeleteMapping("/{itemId}")
     public TodoItemResponse deleteTodoItem(
             @PathVariable Long listId,
-            @PathVariable Long itemId
+            @PathVariable Long itemId,
+            Authentication authentication
     ) {
-        return todoItemService.deleteTodoItem(listId, itemId);
+        Long userId = (Long) authentication.getPrincipal();
+        return todoItemService.deleteTodoItem(userId, listId, itemId);
     }
 }
