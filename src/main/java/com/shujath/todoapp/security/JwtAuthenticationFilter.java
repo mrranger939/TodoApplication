@@ -43,14 +43,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         Long userId = jwtService.extractUserId(token);
-        String email = jwtService.extractEmail(token);
 
         UsernamePasswordAuthenticationToken authentication =
                 new UsernamePasswordAuthenticationToken(
-                        email,              // principal
-                        null,               // credentials
-                        Collections.emptyList() // authorities (later)
+                        userId,   // principal = userId
+                        null,
+                        Collections.emptyList()
                 );
+
 
         authentication.setDetails(
                 new WebAuthenticationDetailsSource().buildDetails(request)

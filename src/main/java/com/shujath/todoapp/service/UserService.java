@@ -12,5 +12,6 @@ public interface UserService {
 
     LoginResponse login(LoginRequest request);
 
-    UserProfileResponse getCurrentUser(String email);
+    UserProfileResponse getCurrentUser(Long userId);
+
 }

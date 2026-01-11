@@ -17,8 +17,8 @@ public class UserController {
     @GetMapping("/me")
     public UserProfileResponse getCurrentUser(Authentication authentication) {
 
-        String email = authentication.getPrincipal().toString();
+        Long userId = (Long) authentication.getPrincipal();
+        return userService.getCurrentUser(userId);
 
-        return userService.getCurrentUser(email);
     }
 }
