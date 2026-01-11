@@ -3,6 +3,7 @@ package com.shujath.todoapp.controller;
 
 import com.shujath.todoapp.dto.todoitem.CreateTodoItemRequest;
 import com.shujath.todoapp.dto.todoitem.TodoItemResponse;
+import com.shujath.todoapp.dto.todoitem.UpdateTodoItemRequest;
 import com.shujath.todoapp.service.TodoItemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -45,19 +46,20 @@ public class TodoItemController {
 
     // Update todo item
     @PutMapping("/{itemId}")
-    public void updateTodoItem(
+    public TodoItemResponse updateTodoItem(
             @PathVariable Long listId,
-            @PathVariable Long itemId
+            @PathVariable Long itemId,
+            @RequestBody UpdateTodoItemRequest request
     ) {
-        // TODO: implement later
+        return todoItemService.updateTodoItem(listId, itemId, request);
     }
 
     // Delete todo item
     @DeleteMapping("/{itemId}")
-    public void deleteTodoItem(
+    public TodoItemResponse deleteTodoItem(
             @PathVariable Long listId,
             @PathVariable Long itemId
     ) {
-        // TODO: implement later
+        return todoItemService.deleteTodoItem(listId, itemId);
     }
 }

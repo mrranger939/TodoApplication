@@ -2,6 +2,7 @@ package com.shujath.todoapp.service.impl;
 
 import com.shujath.todoapp.dto.todoitem.CreateTodoItemRequest;
 import com.shujath.todoapp.dto.todoitem.TodoItemResponse;
+import com.shujath.todoapp.dto.todoitem.UpdateTodoItemRequest;
 import com.shujath.todoapp.entity.TodoItem;
 import com.shujath.todoapp.entity.TodoList;
 import com.shujath.todoapp.mapper.TodoItemMapper;
@@ -64,6 +65,54 @@ public class TodoItemServiceImpl implements TodoItemService {
                 );
 
         return todoItemMapper.toResponse(item);
+    }
+
+    @Override
+    public TodoItemResponse updateTodoItem(
+            Long listId,
+            Long itemId,
+            UpdateTodoItemRequest request
+    ) {
+
+        TodoItem item = todoItemRepository
+                .findByIdAndTodoListId(itemId, listId)
+                .orElseThrow(() ->
+                        new RuntimeException("Todo item not found for this list")
+                );
+
+        // Update only provided fields
+        if (request.getTitle() != null) {
+            item.setTitle(request.getTitle());
+        }
+
+        if (request.getStatus() != null) {
+            item.setStatus(TodoItem.Status.valueOf(request.getStatus()));
+        }
+
+        if (request.getDeadline() != null) {
+            item.setDeadline(request.getDeadline());
+        }
+
+        TodoItem updated = todoItemRepository.save(item);
+
+        return todoItemMapper.toResponse(updated);
+    }
+
+    @Override
+    public TodoItemResponse deleteTodoItem(Long listId, Long itemId) {
+
+        TodoItem item = todoItemRepository
+                .findByIdAndTodoListId(itemId, listId)
+                .orElseThrow(() ->
+                        new RuntimeException("Todo item not found for this list")
+                );
+
+        // Capture response BEFORE delete
+        TodoItemResponse response = todoItemMapper.toResponse(item);
+
+        todoItemRepository.delete(item);
+
+        return response;
     }
 
 }
