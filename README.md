@@ -1,63 +1,103 @@
 
-
 # 📝 Todo App – Spring Boot REST API
 
-A **Spring Boot RESTful backend** for managing todo lists and todo items.
-This version focuses on **core CRUD functionality** without authentication.
-User handling and security will be added in a later version.
+A **production-grade Spring Boot REST API** for managing todo lists and todo items with:
+
+* JWT-based authentication
+* Ownership-based authorization
+* Proper HTTP status codes
+* Centralized exception handling
+* Clean layered architecture
+
+This project demonstrates how a real-world backend should be designed, structured, and secured.
 
 ---
 
-## ⚙️ Tech Stack
+## Database Design (Version 1)
+
+### Entity Relationship Overview
+
+```
+User (1) ──── (N) TodoList (1) ──── (N) TodoItem
+```
+
+---
+
+## Tables
+
+### User
+
+| Column   | Type    | Constraints      |
+| -------- | ------- | ---------------- |
+| id       | BIGINT  | Primary Key      |
+| email    | VARCHAR | UNIQUE, NOT NULL |
+| username | VARCHAR | NOT NULL         |
+| password | VARCHAR | NOT NULL         |
+
+---
+
+### TodoList
+
+| Column  | Type    | Constraints             |
+| ------- | ------- | ----------------------- |
+| id      | BIGINT  | Primary Key             |
+| name    | VARCHAR | NOT NULL                |
+| user_id | BIGINT  | FK → User(id), NOT NULL |
+
+Unique constraint:
+
+* `(user_id, name)` — a user cannot have two todo lists with the same name
+
+---
+
+### TodoItem
+
+| Column       | Type    | Constraints                 |
+| ------------ | ------- | --------------------------- |
+| id           | BIGINT  | Primary Key                 |
+| title        | VARCHAR | NOT NULL                    |
+| status       | ENUM    | NOT NULL                    |
+| deadline     | DATE    | NULLABLE                    |
+| todo_list_id | BIGINT  | FK → TodoList(id), NOT NULL |
+
+Allowed status values:
+
+```
+CREATED
+IN_PROGRESS
+COMPLETED
+NOT_APPLICABLE
+```
+
+---
+
+## Foreign Keys and Cascade Rules
+
+* `TodoList.user_id → User.id`
+* `TodoItem.todo_list_id → TodoList.id`
+
+Cascade behavior:
+
+* Deleting a User deletes all TodoLists and TodoItems
+* Deleting a TodoList deletes all TodoItems
+
+---
+
+## Tech Stack
 
 * Java 17
 * Spring Boot
 * Spring Web
 * Spring Data JPA
+* Spring Security
+* JWT (io.jsonwebtoken)
 * MySQL
-* Flyway (database migrations)
+* Flyway
 * Lombok
 
 ---
 
-## 📦 Project Structure
-
-```
-src/main/java/com/shujath/todoapp
-│
-├── controller
-│   ├── TodoListController.java
-│   └── TodoItemController.java
-│
-├── service
-│   ├── TodoListService.java
-│   ├── TodoItemService.java
-│   └── impl
-│       ├── TodoListServiceImpl.java
-│       └── TodoItemServiceImpl.java
-│
-├── repository
-│   ├── UserRepository.java
-│   ├── TodoListRepository.java
-│   └── TodoItemRepository.java
-│
-├── dto
-│   ├── todolist
-│   └── todoitem
-│
-├── mapper
-│   ├── TodoListMapper.java
-│   └── TodoItemMapper.java
-│
-└── entity
-    ├── User.java
-    ├── TodoList.java
-    └── TodoItem.java
-```
-
----
-
-## 🌐 Base URL
+## Base URL
 
 ```
 http://localhost:8080/api/v1
@@ -65,35 +105,141 @@ http://localhost:8080/api/v1
 
 ---
 
-## 🧠 Important Design Notes (Version 1)
+## Authentication & Security
 
-* ❌ No authentication yet
-* ❌ No JWT / SecurityConfig
-* ✅ `userId` is passed explicitly (temporary)
-* ✅ Entities are **never exposed** directly
-* ✅ All responses use DTOs
-* ✅ Ownership is enforced via path variables (`listId`, `itemId`)
+### Authentication Model
 
-> When authentication is added, `userId` will be derived from the logged-in user instead of request parameters.
+* Stateless JWT authentication
+* No sessions
+* No refresh tokens (Version 1)
+* JWT contains `userId`
+* `userId` is extracted as `Authentication.getPrincipal()`
 
 ---
 
-# 📋 Todo List APIs
+### Authorization Model
 
-## 1️⃣ Create Todo List
+* Every TodoList belongs to exactly one user
+* Every TodoItem belongs to exactly one TodoList
+* Users can only access resources they own
+* Ownership is enforced in the service layer
+* Prevents IDOR vulnerabilities
 
-**POST** `/lists`
+---
 
-### Request Body
+## Auth APIs
+
+### Register User
+
+**POST** `/auth/register`
+Bearer Token: NOT required
+
+Request body:
 
 ```json
 {
-  "name": "Work",
-  "userId": 1
+  "email": "user@example.com",
+  "username": "john",
+  "password": "password123"
 }
 ```
 
-### Response
+Successful response – 201 Created:
+
+```json
+{
+  "id": 1,
+  "email": "user@example.com",
+  "username": "john"
+}
+```
+
+Possible errors:
+
+* 409 Conflict – email already registered
+* 400 Bad Request – invalid input
+
+---
+
+### Login User
+
+**POST** `/auth/login`
+Bearer Token: NOT required
+
+Request body:
+
+```json
+{
+  "email": "user@example.com",
+  "password": "password123"
+}
+```
+
+Successful response – 200 OK:
+
+```json
+{
+  "accessToken": "jwt-token-here"
+}
+```
+
+Possible errors:
+
+* 401 Unauthorized – invalid email or password
+* 400 Bad Request – invalid input
+
+---
+
+## User APIs
+
+### Get Current User Profile
+
+**GET** `/users/me`
+Bearer Token: REQUIRED
+
+Headers:
+
+```
+Authorization: Bearer <jwt-token>
+```
+
+Successful response – 200 OK:
+
+```json
+{
+  "id": 1,
+  "email": "user@example.com",
+  "username": "john"
+}
+```
+
+Possible errors:
+
+* 401 Unauthorized – missing or invalid token
+* 404 Not Found – user not found
+
+---
+
+## Todo List APIs
+
+All TodoList APIs require authentication.
+
+---
+
+### Create Todo List
+
+**POST** `/lists`
+Bearer Token: REQUIRED
+
+Request body:
+
+```json
+{
+  "name": "Work"
+}
+```
+
+Successful response – 201 Created:
 
 ```json
 {
@@ -102,13 +248,20 @@ http://localhost:8080/api/v1
 }
 ```
 
+Possible errors:
+
+* 401 Unauthorized – missing or invalid token
+* 409 Conflict – duplicate list name for user
+* 400 Bad Request – invalid input
+
 ---
 
-## 2️⃣ Get All Todo Lists (for a User)
+### Get All Todo Lists of Current User
 
-**GET** `/lists?userId=1`
+**GET** `/lists`
+Bearer Token: REQUIRED
 
-### Response
+Successful response – 200 OK:
 
 ```json
 [
@@ -123,40 +276,53 @@ http://localhost:8080/api/v1
 ]
 ```
 
+Possible errors:
+
+* 401 Unauthorized – missing or invalid token
+
 ---
 
-## 3️⃣ Update Todo List Name
+### Update Todo List
 
 **PUT** `/lists/{listId}`
+Bearer Token: REQUIRED
 
-### Path Variable
+Path variable:
 
 * `listId` – ID of the todo list
 
-### Request Body
+Request body:
 
 ```json
 {
-  "name": "Updated Work List"
+  "name": "Updated Work"
 }
 ```
 
-### Response
+Successful response – 200 OK:
 
 ```json
 {
   "id": 1,
-  "name": "Updated Work List"
+  "name": "Updated Work"
 }
 ```
 
+Possible errors:
+
+* 401 Unauthorized
+* 403 Forbidden – list belongs to another user
+* 404 Not Found – list does not exist
+* 409 Conflict – duplicate list name
+
 ---
 
-## 4️⃣ Delete Todo List
+### Delete Todo List
 
 **DELETE** `/lists/{listId}`
+Bearer Token: REQUIRED
 
-### Response
+Successful response – 200 OK:
 
 ```json
 {
@@ -165,13 +331,19 @@ http://localhost:8080/api/v1
 }
 ```
 
-> Deleting a list automatically deletes all its todo items (cascade delete).
+Possible errors:
+
+* 401 Unauthorized
+* 403 Forbidden – list belongs to another user
+* 404 Not Found – list does not exist
+
+Cascade delete applies to todo items.
 
 ---
 
-# ✅ Todo Item APIs
+## Todo Item APIs
 
-All todo items are scoped under a **specific todo list**.
+All TodoItem APIs are scoped under a TodoList.
 
 Base path:
 
@@ -179,13 +351,15 @@ Base path:
 /lists/{listId}/items
 ```
 
+Bearer Token: REQUIRED for all endpoints below.
+
 ---
 
-## 5️⃣ Create Todo Item
+### Create Todo Item
 
 **POST** `/lists/{listId}/items`
 
-### Request Body
+Request body:
 
 ```json
 {
@@ -195,16 +369,7 @@ Base path:
 }
 ```
 
-### Allowed Status Values
-
-```
-CREATED
-IN_PROGRESS
-COMPLETED
-NOT_APPLICABLE
-```
-
-### Response
+Successful response – 201 Created:
 
 ```json
 {
@@ -215,13 +380,20 @@ NOT_APPLICABLE
 }
 ```
 
+Possible errors:
+
+* 401 Unauthorized
+* 403 Forbidden – list belongs to another user
+* 404 Not Found – list does not exist
+* 400 Bad Request – invalid status or input
+
 ---
 
-## 6️⃣ Get All Todo Items in a List
+### Get All Todo Items in a List
 
 **GET** `/lists/{listId}/items`
 
-### Response
+Successful response – 200 OK:
 
 ```json
 [
@@ -240,13 +412,19 @@ NOT_APPLICABLE
 ]
 ```
 
+Possible errors:
+
+* 401 Unauthorized
+* 403 Forbidden
+* 404 Not Found – list does not exist
+
 ---
 
-## 7️⃣ Get One Todo Item
+### Get One Todo Item
 
 **GET** `/lists/{listId}/items/{itemId}`
 
-### Response
+Successful response – 200 OK:
 
 ```json
 {
@@ -257,15 +435,21 @@ NOT_APPLICABLE
 }
 ```
 
-> The API ensures the item belongs to the given list.
+Possible errors:
+
+* 401 Unauthorized
+* 403 Forbidden
+* 404 Not Found – item or list not found
 
 ---
 
-## 8️⃣ Update Todo Item
+### Update Todo Item
 
 **PUT** `/lists/{listId}/items/{itemId}`
 
-### Request Body (partial updates allowed)
+Partial updates allowed.
+
+Request body:
 
 ```json
 {
@@ -273,7 +457,7 @@ NOT_APPLICABLE
 }
 ```
 
-### Response
+Successful response – 200 OK:
 
 ```json
 {
@@ -284,13 +468,20 @@ NOT_APPLICABLE
 }
 ```
 
+Possible errors:
+
+* 401 Unauthorized
+* 403 Forbidden
+* 404 Not Found
+* 400 Bad Request
+
 ---
 
-## 9️⃣ Delete Todo Item
+### Delete Todo Item
 
 **DELETE** `/lists/{listId}/items/{itemId}`
 
-### Response
+Successful response – 200 OK:
 
 ```json
 {
@@ -301,42 +492,68 @@ NOT_APPLICABLE
 }
 ```
 
----
+Possible errors:
 
-## 🛠 Database
-
-* Managed via **Flyway**
-* Schema includes:
-
-    * `users`
-    * `todo_lists`
-    * `todo_items`
-* Foreign key relationships are enforced
-* Cascading deletes are enabled
+* 401 Unauthorized
+* 403 Forbidden
+* 404 Not Found
 
 ---
 
-## 🚀 Future Enhancements
+## Error Handling
 
-Planned for next versions:
+All errors are handled via `GlobalExceptionHandler`.
 
-* Authentication & JWT
-* `/auth/register`, `/auth/login`
-* `/users/me`
-* Global exception handling
-* Validation annotations
-* HTTP status codes (`201`, `404`, `409`)
-* Pagination & sorting
+Error response format:
+
+```json
+{
+  "message": "Human readable error message",
+  "status": 404,
+  "timestamp": "2026-01-11T14:30:00Z"
+}
+```
+
+Mapped exceptions:
+
+| Exception             | HTTP Status |
+| --------------------- | ----------- |
+| NotFoundException     | 404         |
+| ForbiddenException    | 403         |
+| UnauthorizedException | 401         |
+| ConflictException     | 409         |
+| BadRequestException   | 400         |
 
 ---
 
-## ✅ Current Status
+## Database & Migrations
 
-* ✔ All TodoList CRUD APIs implemented
-* ✔ All TodoItem CRUD APIs implemented
-* ✔ Clean layered architecture
-* ✔ Ready for auth integration
+* Managed using Flyway
+* Initial schema defined in `V1__init_schema.sql`
+* Schema validated on application startup
+* Safe, versioned migrations
 
 ---
+
+## Architectural Principles
+
+* Layered architecture (Controller → Service → Repository)
+* DTO-based API (entities never exposed)
+* Stateless security
+* Ownership enforced in service layer
+* Centralized exception handling
+* Proper HTTP semantics
+* Clean separation of concerns
+
+---
+
+## Current Status
+
+* JWT authentication implemented
+* All TodoList and TodoItem APIs secured
+* Ownership enforced across all operations
+* Proper HTTP status codes used
+* Global exception handling in place
+* Backend is production-ready
 
 
